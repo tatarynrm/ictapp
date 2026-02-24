@@ -1,7 +1,9 @@
-appId: com.electron.app
+appId: com.tatarynrm.ictapp # Рекомендую змінити на унікальний, пов'язаний з твоїм GitHub
 productName: ictapp
 directories:
   buildResources: build
+  output: dist # Явно вказуємо папку для білдів
+
 files:
   - '!**/.vscode/*'
   - '!src/*'
@@ -11,35 +13,46 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+
 win:
   executableName: ictapp
+  # Додаємо цільові формати для Windows
+  target:
+    - target: nsis
+      arch:
+        - x64
+
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  oneClick: false # Дозволяє користувачу вибрати шлях встановлення
+  allowToChangeInstallationDirectory: true
+
 mac:
+  # Якщо немає сертифікатів Apple, notarize має бути false (як у тебе)
+  notarize: false
+  # Додаємо категорію та ціль
+  category: public.app-category.utilities
+  target:
+    - dmg
+    - zip # zip часто потрібен для коректної роботи auto-updater на Mac
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
+    NSCameraUsageDescription: Application requests access to the device's camera.
+    NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+
 dmg:
   artifactName: ${name}-${version}.${ext}
-linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-    - zip
-  maintainer: electronjs.org
-  category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
-npmRebuild: false
+
 publish:
   provider: github
   owner: tatarynrm
   repo: ictapp
+  # Додаємо стратегію публікації
+  releaseType: draft # Краще створювати чернетку, яку ти перевіриш перед публікацією
+
+npmRebuild: false
