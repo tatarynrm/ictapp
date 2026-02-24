@@ -36,7 +36,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installers-${{ matrix.os }}
-          # Забираємо готові файли з папки dist
+          # Використовуємо подвійну зірочку для глибокого пошуку
           path: |
-            dist/*.exe
-            dist/*.dmg
+            dist/**/*.exe
+            dist/**/*.dmg
+            dist/**/*.zip
+          # Якщо файл не знайдено, Action видасть помилку (це допоможе нам відлагодити)
+          if-no-files-found: error
