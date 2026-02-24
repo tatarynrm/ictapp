@@ -3,7 +3,7 @@ name: Build and Release App
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*' # Спрацює, коли ти створиш тег, наприклад v1.0.1
 
 jobs:
   build-and-release:
@@ -16,30 +16,22 @@ jobs:
       contents: write
 
     steps:
-      - name: Завантаження коду
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Встановлення Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Встановлення залежностей
+      - name: Install dependencies
         run: npm install
 
-      - name: Збірка додатку
-        # Замість плагіна публікації просто запускаємо збірку
-        run: npm run build
-
-      - name: Збереження інсталяторів (Артефакти)
-        uses: actions/upload-artifact@v4
-        with:
-          name: installers-${{ matrix.os }}
-          # Використовуємо подвійну зірочку для глибокого пошуку
-          path: |
-            dist/**/*.exe
-            dist/**/*.dmg
-            dist/**/*.zip
-          # Якщо файл не знайдено, Action видасть помилку (це допоможе нам відлагодити)
-          if-no-files-found: error
+      - name: Build and Publish
+        # Ця команда збирає додаток і автоматично завантажує його в GitHub Releases
+        # Параметр --publish always змушує electron-builder створити реліз
+        run: npm run build -- --publish always
+        env:
+          # Вбудований токен GitHub, нічого налаштовувати не треба
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
