@@ -1,6 +1,6 @@
 {
   "name": "ictapp",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -27,6 +27,7 @@
     "axios": "^1.13.5",
     "electron-log": "^5.4.3",
     "electron-updater": "^6.3.9",
+    "lucide-react": "^0.575.0",
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
