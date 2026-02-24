@@ -3,13 +3,14 @@ name: Build and Release App
 on:
   push:
     tags:
-      - 'v*' # Спрацює, коли ти створиш тег, наприклад v1.0.1
+      - 'v*'
 
 jobs:
   build-and-release:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        # Можеш додати ubuntu-latest, якщо захочеш версію для Linux
         os: [windows-latest, macos-latest]
 
     permissions:
@@ -26,12 +27,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        # Використовуємо ci для більш стабільних збірок на серверах
+        run: npm ci
 
       - name: Build and Publish
-        # Ця команда збирає додаток і автоматично завантажує його в GitHub Releases
-        # Параметр --publish always змушує electron-builder створити реліз
+        # Використовуємо вбудований скрипт, який ми бачили у твоєму package.json
         run: npm run build -- --publish always
         env:
-          # Вбудований токен GitHub, нічого налаштовувати не треба
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Для macOS можна додати ігнорування підпису, якщо у тебе немає Apple Developer ID
+          # CSC_SKIP_SIGNING: true
