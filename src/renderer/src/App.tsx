@@ -10,6 +10,7 @@ import Tenders from './pages/dashboard/Tenders'
 import Settings from './pages/dashboard/Settings'
 import Profile from './pages/dashboard/Profile'
 import Loads from './pages/dashboard/Loads'
+import Analytics from './pages/dashboard/Analytics'
 
 const queryClient = new QueryClient()
 
@@ -73,6 +74,7 @@ export default function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="profile" element={<Profile />} />
               <Route path="loads" element={<Loads />} />
+              <Route path="analytics" element={<Analytics />} />
             </Route>
 
             <Route

@@ -11,6 +11,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
     { path: 'tenders', label: 'Тендери', icon: '📁' },
     { path: 'settings', label: 'Налаштування', icon: '⚙️' },
     { path: 'loads', label: 'Завантаження', icon: '🌌' },
+    { path: 'analytics', label: 'Аналітика', icon: '📊' },
     { path: 'profile', label: 'Профіль', icon: '👤' },
   ]
 
