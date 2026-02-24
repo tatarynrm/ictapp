@@ -9,6 +9,10 @@ autoUpdater.logger = log
 // @ts-ignore
 autoUpdater.logger.transports.file.level = 'info'
 
+// НАЛАШТУВАННЯ АВТОМАТИЗАЦІЇ
+autoUpdater.autoDownload = true
+autoUpdater.autoInstallOnAppQuit = true
+
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
 let isQuitting = false
@@ -26,7 +30,6 @@ function createWindow(): void {
     }
   })
 
-  // Ховаємо в трей замість закриття
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault()
@@ -36,10 +39,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
-    // Перевірка при запуску (тільки у зібраному стані)
-    if (!is.dev) {
-      autoUpdater.checkForUpdatesAndNotify()
-    }
+    if (!is.dev) autoUpdater.checkForUpdatesAndNotify()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -67,23 +67,31 @@ function createTray(): void {
   tray.on('double-click', () => mainWindow?.show())
 }
 
-// --- БЕЗПЕЧНА ВІДПРАВКА В UI ---
-const sendStatusToGui = (channel: string, ...args: any[]) => {
+const sendToUi = (channel: string, ...args: any[]) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, ...args)
   }
 }
 
+// ЛОГІКА ОНОВЛЕНЬ
 autoUpdater.on('update-available', () => {
-  sendStatusToGui('update-status', 'Знайдено оновлення, починаємо завантаження...')
+  log.info('Update available. Downloading...')
+  sendToUi('update-status', 'Завантажуємо нову версію у фоні...')
 })
 
-autoUpdater.on('download-progress', (progressObj) => {
-  sendStatusToGui('update-progress', progressObj.percent)
+autoUpdater.on('download-progress', (progress) => {
+  sendToUi('update-progress', progress.percent)
 })
 
 autoUpdater.on('update-downloaded', () => {
-  sendStatusToGui('update-ready')
+  log.info('Update downloaded.')
+  sendToUi('update-ready')
+
+  // Якщо вікно приховане (в треї) — оновлюємо миттєво
+  if (mainWindow && !mainWindow.isVisible()) {
+    isQuitting = true
+    autoUpdater.quitAndInstall(false, true)
+  }
 })
 
 ipcMain.on('install-update', () => {
@@ -93,15 +101,12 @@ ipcMain.on('install-update', () => {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.tatarynrm.ictapp')
-
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
+  app.on('browser-window-created', (_, window) => optimizer.watchWindowShortcuts(window))
 
   createWindow()
   createTray()
 
-  // ПЕРЕВІРКА КОЖНІ 10 ХВИЛИН
+  // Перевірка кожні 10 хвилин
   setInterval(() => {
     if (!is.dev) autoUpdater.checkForUpdates()
   }, 10 * 60 * 1000)
@@ -110,10 +115,6 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
     else mainWindow?.show()
   })
-})
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') { /* Програма лишається в треї */ }
 })
 
 app.on('before-quit', () => { isQuitting = true })
