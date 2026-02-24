@@ -1,0 +1,38 @@
+name: Build and Release App
+
+on:
+  push:
+    tags:
+      - 'v*' # Запускатиметься тільки коли ти створюєш версію, наприклад v1.0.0
+
+jobs:
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Запускаємо паралельно на віртуальній Вінді та Маку
+        os: [windows-latest, macos-latest]
+
+    # Це критично важливо: даємо боту дозвіл завантажити файли в твій репозиторій
+    permissions:
+      contents: write
+
+    steps:
+      - name: Завантаження коду
+        uses: actions/checkout@v4
+
+      - name: Встановлення Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Встановлення залежностей
+        run: npm install
+
+      - name: Збірка та публікація інсталяторів
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          # Цей токен GitHub генерує автоматично, тобі не треба нічого створювати
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release: true
