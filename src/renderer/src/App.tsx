@@ -19,19 +19,22 @@ function UpdateSubscriber() {
     const { electron } = window as any
     if (!electron) return
 
-    const removeStatus = electron.ipcRenderer.on('update-status', (_: any, msg: string) => {
-      showModal('Оновлення', msg, 'info')
-    })
+    const handleStatus = (_: any, msg: string) => {
+      showModal('Система оновлення', msg, 'info')
+    }
 
-    const removeProgress = electron.ipcRenderer.on('update-progress', (_: any, percent: number) => {
-      // Показуємо прогрес, оновлюючи модалку
+    const handleProgress = (_: any, percent: number) => {
       showModal('Оновлення', `Завантаження: ${Math.round(percent)}%`, 'info')
-    })
+    }
 
-    const removeReady = electron.ipcRenderer.on('update-ready', () => {
-      showModal('Готово!', 'Програма перезапуститься для встановлення за 3 сек.', 'success')
+    const handleReady = () => {
+      showModal('Все готово!', 'Додаток перезапуститься через 3 секунди для оновлення.', 'success')
       setTimeout(() => electron.ipcRenderer.send('install-update'), 3000)
-    })
+    }
+
+    const removeStatus = electron.ipcRenderer.on('update-status', handleStatus)
+    const removeProgress = electron.ipcRenderer.on('update-progress', handleProgress)
+    const removeReady = electron.ipcRenderer.on('update-ready', handleReady)
 
     return () => {
       removeStatus(); removeProgress(); removeReady();
@@ -44,8 +47,8 @@ function UpdateSubscriber() {
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  const handleLogin = useCallback(() => setIsAuthenticated(true), [])
-  const handleLogout = useCallback(() => setIsAuthenticated(false), [])
+  const login = useCallback(() => setIsAuthenticated(true), [])
+  const logout = useCallback(() => setIsAuthenticated(false), [])
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -53,13 +56,14 @@ export default function App() {
         <UpdateSubscriber />
         <HashRouter>
           <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/login" element={<Login onLogin={login} />} />
 
+            {/* ГРУПА ЗАХИЩЕНИХ МАРШРУТІВ */}
             <Route
               path="/dashboard"
               element={
                 isAuthenticated ? (
-                  <DashboardLayout onLogout={handleLogout} />
+                  <DashboardLayout onLogout={logout} />
                 ) : (
                   <Navigate to="/login" replace />
                 )

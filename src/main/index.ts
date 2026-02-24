@@ -26,6 +26,7 @@ function createWindow(): void {
     }
   })
 
+  // Ховаємо в трей замість закриття
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault()
@@ -35,7 +36,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
-    // Перевірка при запуску
+    // Перевірка при запуску (тільки у зібраному стані)
     if (!is.dev) {
       autoUpdater.checkForUpdatesAndNotify()
     }
@@ -66,23 +67,23 @@ function createTray(): void {
   tray.on('double-click', () => mainWindow?.show())
 }
 
-// --- ЛОГІКА АВТООНОВЛЕНЬ (БЕЗПЕЧНА) ---
-const sendToWebContents = (channel: string, ...args: any[]) => {
+// --- БЕЗПЕЧНА ВІДПРАВКА В UI ---
+const sendStatusToGui = (channel: string, ...args: any[]) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, ...args)
   }
 }
 
 autoUpdater.on('update-available', () => {
-  sendToWebContents('update-status', 'Знайдено оновлення, завантажуємо...')
+  sendStatusToGui('update-status', 'Знайдено оновлення, починаємо завантаження...')
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
-  sendToWebContents('update-progress', progressObj.percent)
+  sendStatusToGui('update-progress', progressObj.percent)
 })
 
 autoUpdater.on('update-downloaded', () => {
-  sendToWebContents('update-ready')
+  sendStatusToGui('update-ready')
 })
 
 ipcMain.on('install-update', () => {
@@ -91,7 +92,6 @@ ipcMain.on('install-update', () => {
 })
 
 app.whenReady().then(() => {
-  // Вказуй свій appId з package.json
   electronApp.setAppUserModelId('com.tatarynrm.ictapp')
 
   app.on('browser-window-created', (_, window) => {
@@ -101,10 +101,10 @@ app.whenReady().then(() => {
   createWindow()
   createTray()
 
-  // Фонова перевірка кожні 15 хвилин
+  // ПЕРЕВІРКА КОЖНІ 10 ХВИЛИН
   setInterval(() => {
     if (!is.dev) autoUpdater.checkForUpdates()
-  }, 15 * 60 * 1000)
+  }, 10 * 60 * 1000)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
