@@ -13,7 +13,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
   ]
 
   return (
-    <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0 h-full shadow-2xl">
+    <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0 h-full shadow-2xl min-h-screen">
       {/* Заголовок з "Drag Region" для Electron, якщо у тебе прихований titlebar */}
       <div className="p-6 text-2xl font-bold border-b border-slate-800 text-blue-400 select-none">
         ICTAPP
