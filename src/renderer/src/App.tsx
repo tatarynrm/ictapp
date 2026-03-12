@@ -20,6 +20,7 @@ function UpdateSubscriber() {
   useEffect(() => {
     const { electron } = window as any
     if (!electron) return
+console.log('1111 borovenko1');
 
     // Фоновий статус (тільки в консоль)
     const removeStatus = electron.ipcRenderer.on('update-status', (_: any, msg: string) => {
