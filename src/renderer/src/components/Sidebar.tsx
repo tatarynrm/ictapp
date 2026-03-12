@@ -13,6 +13,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
     { path: 'loads', label: 'Завантаження', icon: '🌌' },
     { path: 'analytics', label: 'Аналітика', icon: '📊' },
     { path: 'profile', label: 'Профіль', icon: '👤' },
+    { path: 'borovenko', label: 'Borovenko', icon: '🚛🚛🚛' },
   ]
 
   return (
